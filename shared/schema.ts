@@ -1,18 +1,13 @@
-import { sql } from "drizzle-orm";
-import { pgTable, text, varchar } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+export const patientSchema = z.object({
+  id: z.string(),
+  patientName: z.string().min(1, "Patient name is required"),
+  medicineName: z.string().min(1, "Medicine name is required"),
+  dosage: z.number().min(1, "Dosage is required"),
+  alarmTime: z.string().regex(/^([01]\d|2[0-3]):?([0-5]\d)$/, "Invalid time format"),
+  color: z.string(),
+  medicinePhoto: z.string().optional() // base64 string
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-});
-
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
+export type Patient = z.infer<typeof patientSchema>;
